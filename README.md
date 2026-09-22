@@ -1,130 +1,99 @@
-# AI Resume Analyzer API
+# AI Resume Analyser API
 
-A backend REST API that analyzes resumes using AI, providing ATS-compatibility scores and actionable feedback. Users can upload a PDF resume, have it automatically parsed and analyzed by an LLM, and retrieve structured feedback on formatting, content, and skills presentation.
+A backend REST API that parses resumes and uses Google's Gemini API to generate ATS-compatibility scores, skill-gap analysis, and actionable feedback.
 
 ## Features
 
-- JWT-based authentication with access and refresh tokens
-- Role-based access control
-- Resume upload with PDF parsing (text extraction)
-- AI-powered resume analysis (ATS score, tone, content, structure, and skills scoring, plus actionable tips) via Google's Gemini API
-- Ownership-based authorization — users can only access their own resumes
-- PostgreSQL database with Sequelize ORM and versioned migrations
+-  JWT authentication (access + refresh tokens) with role-based access control
+-  PDF resume upload and text extraction
+-  AI-powered analysis — ATS score, tone, structure, and skills scoring via Gemini
+-  Ownership-based authorisation — users only access their own resumes
+-  PostgreSQL + Sequelise with versioned migrations
 
 ## Tech Stack
 
-- **Runtime**: Node.js, Express.js
-- **Database**: PostgreSQL, Sequelize ORM
-- **Authentication**: JWT (access + refresh tokens)
-- **File handling**: Multer (uploads), pdf-parse (text extraction)
-- **AI**: Google Gemini API
-- **Validation**: Joi
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js, Express |
+| Database | PostgreSQL, Sequelise |
+| Auth | JWT (access + refresh) |
+| Files | Multer, pdf-parse |
+| AI | Google Gemini API |
+| Validation | Joi |
 
 ## Project Structure
 
-```text
-src/
-├── config/             # Environment variables, JWT, AI, and application configuration
-├── controllers/        # Handle HTTP requests and responses
-│   ├── auth.controller.js
-│   ├── resume.controller.js
-│   └── user.controller.js
-├── db/
-│   ├── config/         # Sequelize configuration
-│   ├── migrations/     # Database migrations
-│   └── models/         # Sequelize models (User, Resume, ResumeFeedback)
-├── middlewares/        # Authentication, validation, file upload, and error handling
-├── routes/             # API route definitions
-│   └── v1/
-├── services/           # Business logic (resume analysis, AI integration, authentication)
-├── utils/              # Helper functions and utilities
-├── validations/        # Joi request validation schemas
-├── app.js              # Express application configuration
-└── index.js            # Application entry point
 ```
+src/
+├── config/ Environment, JWT, AI config
+├── controllers/ auth · resume · user
+├── db/ migrations, models (User, Resume, ResumeFeedback)
+├── middlewares/ auth, validation, uploads, errors
+├── routes/v1/ API route definitions
+├── services/ Business logic + Gemini integration
+├── validations/ Joi schemas
+└── app.js / index.js
+```
+
 
 ## API Endpoints
 
-**Auth routes**:
-`POST /v1/auth/register` — register
-`POST /v1/auth/login` — login
-`POST /v1/auth/forgot-password` — forgot password
-`POST /v1/auth/reset-password` — reset password
+| Method | Route | Description |
+|---|---|---|
+| POST | `/v1/auth/register` | Register |
+| POST | `/v1/auth/login` | Login |
+| POST | `/v1/auth/forgot-password` | Forgot password |
+| POST | `/v1/auth/reset-password` | Reset password |
+| POST | `/v1/resumes` | Upload resume (PDF) |
+| GET | `/v1/resumes` | List your resumes |
+| GET | `/v1/resumes/:id` | Get one resume + feedback |
+| DELETE | `/v1/resumes/:id` | Delete a resume |
+| POST | `/v1/resumes/:id/analyse` | Run AI analysis |
+| GET | `/v1/users` | List users |
+| GET / PATCH / DELETE | `/v1/users/:id` | Manage a user |
 
-**Resume routes** (requires authentication):
-`POST /v1/resumes` — upload a resume (PDF, multipart/form-data), with optional `jobTitle`/`jobDescription`
-`GET /v1/resumes` — list your own resumes, paginated
-`GET /v1/resumes/:resumeId` — get a single resume, including any feedback
-`DELETE /v1/resumes/:resumeId` — delete a resume
-`POST /v1/resumes/:resumeId/analyze` — analyze a resume with AI, generating scores and feedback
+*Resume routes require authentication.*
 
-**User routes**:
-`GET /v1/users` — get all users
-`GET /v1/users/:userId` — get a user
-`PATCH /v1/users/:userId` — update a user
-`DELETE /v1/users/:userId` — delete a user
+## Testing
 
-## Database Schema
-
-- **user** — user accounts (existing)
-- **role** — roles for access control (existing)
-- **resume** — uploaded resumes, linked to a user, including extracted text and job context
-- **resume_feedback** — AI-generated feedback for a resume, including scores and tips (JSONB)
+Jest + Supertest coverage across auth flows and resume endpoints. Testing surfaced and fixed a real bug —> a `error.status` vs `error.statusCode` mismatch in the JWT error handler that would've caused incorrect error responses in production.
 
 ## Getting Started
 
-### Prerequisites
-- Node.js
-- PostgreSQL
-- A Google Gemini API key ([aistudio.google.com](https://aistudio.google.com))
+```bash
+git clone <repo-url>
+cd ai-resume-analyser-api
+npm install
+```
 
-### Installation
+Copy `.env.example` → `.env`, set your DB credentials, JWT secret, and `GEMINI_API_KEY`.
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Copy `.env.example` to `.env` and configure your database credentials, JWT secret, and `GEMINI_API_KEY`
-4. Run database migrations: `node_modules/.bin/sequelize db:migrate`
-5. Start the server: `npm run dev`
+```bash
+node_modules/.bin/sequelise db:migrate
+npm run dev
+```
 
-### API Documentation
-Once running, view the auto-generated Swagger docs at `http://localhost:3000/v1/docs`
+Swagger docs: `http://localhost:3000/v1/docs`
 
 ## About This Project
 
-This project is built on top of an open-source Node.js/Express/PostgreSQL boilerplate, which provided the initial authentication and role-based access control foundation. On top of that foundation, I designed and built:
+Built on top of the open-source by japananh, which provided initial auth + RBAC scaffolding. I designed and built on top of it:
 
-- The `resume` and `resume_feedback` database schema and migrations
-- Resume upload handling with Multer
-- PDF text extraction with pdf-parse
-- Integration with Google's Gemini API for AI-powered resume analysis
-- All resume-related services, controllers, routes, and validation
-- Ownership-based authorization for resume access
+- `resume` / `resume_feedback` schema and migrations
+- Resume upload (Multer) + text extraction (pdf-parse)
+- Gemini API integration for AI-powered analysis
+- All resume-related services, controllers, routes, validation
+- Ownership-based authorisation
+- Jest/Supertest test coverage
 
 ## Roadmap
 
-- [ ] React frontend for resume upload and analysis
+- [ ] React frontend
 - [ ] Resume-to-job-description matching
 - [ ] Downloadable ATS report (PDF)
-- [ ] Docker support
+- [ ] Docker — for consistent dev/deployment environments
 - [ ] Cloud deployment
 
-## Acknowledgements
-
-This project was initially bootstrapped using the
-Node Express PostgreSQL Boilerplate by japananh.
-
-The project has been significantly extended with:
-
-- AI-powered resume analysis
-- Resume upload and management
-- Resume feedback generation
-- ATS scoring
-- PostgreSQL database models
-- Swagger API documentation
-- JWT authentication enhancements
-
 ## License
-
-This project is licensed under the MIT License.
 
 It is based on the Node Express PostgreSQL Boilerplate by japananh and has been extended with project-specific functionality for AI-powered resume analysis.
