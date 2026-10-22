@@ -26,7 +26,7 @@ const deleteResume = {
 	}),
 };
 
-const analyzeResume = {
+const analyseResume = {
 	params: Joi.object().keys({
 		resumeId: Joi.string(),
 	}),
@@ -37,5 +37,5 @@ module.exports = {
 	getResumes,
 	getResume,
 	deleteResume,
-	analyzeResume,
+	analyseResume,
 };

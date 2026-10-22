@@ -40,7 +40,7 @@ async function createResume(userId, file, body) {
 	}
 
 	try {
-		const feedback = await analyzeResume(resume.id, userId);
+		const feedback = await analyseResume(resume.id, userId);
 		return { resume: { ...resume, status: 'completed' }, feedback };
 	} catch (error) {
 		console.error('Auto-analysis failed:', error.message);
@@ -96,7 +96,7 @@ async function deleteResumeById(resumeId, userId) {
 	return true;
 }
 
-async function analyzeResume(resumeId, userId) {
+async function analyseResume(resumeId, userId) {
 	const resume = await db.resume.findOne({
 		where: { id: resumeId, user_id: userId },
 	});
@@ -186,5 +186,6 @@ module.exports = {
 	getResumeById,
 	getResumes,
 	deleteResumeById,
-	analyzeResume,
+	analyseResume,
+	extractTextFromPdf,
 };

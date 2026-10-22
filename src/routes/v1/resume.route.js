@@ -22,7 +22,7 @@ router
 
 router
 	.route('/:resumeId/analyze')
-	.post(validate(resumeValidation.analyzeResume), resumeController.analyzeResume);
+	.post(validate(resumeValidation.analyseResume), resumeController.analyseResume);
 
 module.exports = router;
 
